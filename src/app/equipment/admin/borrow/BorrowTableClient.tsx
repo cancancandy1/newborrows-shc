@@ -195,7 +195,7 @@ export default function BorrowTableClient({ initialData }: { initialData: Borrow
 
               {/* จัดการสถานะ */}
               <div className="border-t border-gray-100 pt-6">
-                <h4 className="font-semibold text-gray-900 mb-3 text-red-600">อัปเดตสถานะ (ระบบจะส่งอีเมลแจ้งเตือนผู้ใช้งานอัตโนมัติ)</h4>
+                {/* <h4 className="font-semibold text-gray-900 mb-3 text-red-600">อัปเดตสถานะ (ระบบจะส่งอีเมลแจ้งเตือนผู้ใช้งานอัตโนมัติ)</h4>
                 
                 <div className="mb-4">
                   <label className="form-label">หมายเหตุ (ส่งแนบไปในอีเมล / เพื่อบันทึกประวัติ)</label>
@@ -206,7 +206,7 @@ export default function BorrowTableClient({ initialData }: { initialData: Borrow
                     rows={2}
                     placeholder="เหตุผลการปฏิเสธ, สภาพตอนรับคืน ฯลฯ"
                   />
-                </div>
+                </div> */}
 
                 <div className="flex flex-wrap gap-2">
                   {selectedBorrow.status === BorrowStatus.PENDING && (
@@ -222,7 +222,7 @@ export default function BorrowTableClient({ initialData }: { initialData: Borrow
 
                   {selectedBorrow.status === BorrowStatus.APPROVED && (
                     <button onClick={() => handleUpdateStatus(BorrowStatus.BORROWED)} disabled={isUpdating} className="btn bg-purple-600 hover:bg-purple-700 text-white flex-1">
-                      📦 รับอุปกรณ์ไปแล้ว (กำลังยืม)
+                      📦 รับอุปกรณ์ไปแล้ว (สถานะ : กำลังยืม)
                     </button>
                   )}
 
@@ -234,7 +234,7 @@ export default function BorrowTableClient({ initialData }: { initialData: Borrow
 
                   {/* ถ้าจบกระบวนการแล้ว จะมีปุ่มทำสิ่งอื่นๆ หรือเปลี่ยนใจกรณีเผลอกดผิด */}
                   {(selectedBorrow.status === BorrowStatus.RETURNED || selectedBorrow.status === BorrowStatus.REJECTED) && (
-                    <div className="w-full text-center text-sm text-gray-500 py-2">
+                    <div className="w-full text-center text-lg text-gray-500 py-2">
                       รายการนี้จบกระบวนการแล้ว (คืน Stock เรียบร้อย)
                     </div>
                   )}

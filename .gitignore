@@ -36,6 +36,9 @@ yarn-error.log*
 ecosystem.config.js
 docker-compose.yaml
 .agents/*
+/prisma
+thai_comments.json
+extract_comments.js
 
 # vercel
 .vercel

@@ -40,7 +40,7 @@ export function BorrowStatusBadge({ status }: { status: BorrowStatus }) {
 export function EquipmentStatusBadge({ status }: { status: EquipmentStatus }) {
   const { label, className } = equipmentStatusMap[status]
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${className}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium border ${className}`}>
       {label}
     </span>
   )

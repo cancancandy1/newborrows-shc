@@ -1,5 +1,3 @@
-// app/admin/equipment/EquipmentTableClient.tsx - Client component สำหรับตารางอุปกรณ์
-// รองรับอัปโหลดรูปภาพพร้อม compress ฝั่ง client และเลือกสถานะอุปกรณ์
 'use client'
 
 import { useState, useRef } from 'react'
@@ -9,10 +7,7 @@ import { EquipmentStatusBadge, equipmentStatusMap } from '../../../../components
 import { EquipmentStatus } from '@prisma/client'
 import type { EquipmentWithCategory, EquipmentCategory } from '../../../../types'
 
-// ===========================
-// ฟังก์ชัน compress รูปภาพฝั่ง client ผ่าน canvas
-// จำกัดขนาดไม่เกิน 200KB และกว้างสูงสุด 800px
-// ===========================
+
 async function compressImage(file: File, maxWidth = 800, maxSizeKB = 200): Promise<File> {
   return new Promise((resolve, reject) => {
     const img = new Image()
@@ -21,7 +16,7 @@ async function compressImage(file: File, maxWidth = 800, maxSizeKB = 200): Promi
     img.onload = () => {
       URL.revokeObjectURL(url)
 
-      // คำนวณขนาดใหม่ (รักษาสัดส่วน)
+
       let width = img.width
       let height = img.height
       if (width > maxWidth) {
@@ -36,8 +31,6 @@ async function compressImage(file: File, maxWidth = 800, maxSizeKB = 200): Promi
       if (!ctx) return reject(new Error('ไม่สามารถสร้าง canvas context'))
 
       ctx.drawImage(img, 0, 0, width, height)
-
-      // ลดคุณภาพจนขนาดไม่เกิน maxSizeKB
       let quality = 0.85
       const tryCompress = () => {
         canvas.toBlob(
@@ -48,7 +41,6 @@ async function compressImage(file: File, maxWidth = 800, maxSizeKB = 200): Promi
               quality -= 0.1
               tryCompress()
             } else {
-              // สร้าง File ใหม่จาก blob ที่ compress แล้ว
               const ext = file.name.split('.').pop() || 'jpg'
               const compressedFile = new File([blob], `compressed_${Date.now()}.${ext}`, {
                 type: blob.type,
@@ -85,16 +77,11 @@ export default function EquipmentTableClient({
   const [editingItem, setEditingItem] = useState<EquipmentWithCategory | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // state สำหรับไฟล์รูปที่เลือก (compress แล้ว)
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
-  // preview URL สำหรับแสดงรูปตัวอย่าง
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  // สถานะอุปกรณ์
   const [selectedStatus, setSelectedStatus] = useState<EquipmentStatus>(EquipmentStatus.ACTIVE)
-  // ref สำหรับ reset input file
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // เปิด Modal เพิ่ม
   const handleAddNew = () => {
     setEditingItem(null)
     setSelectedImage(null)
@@ -103,7 +90,6 @@ export default function EquipmentTableClient({
     setIsModalOpen(true)
   }
 
-  // เปิด Modal แก้ไข
   const handleEdit = (item: EquipmentWithCategory) => {
     setEditingItem(item)
     setSelectedImage(null)
@@ -112,7 +98,6 @@ export default function EquipmentTableClient({
     setIsModalOpen(true)
   }
 
-  // ปิด Modal และ reset state
   const closeModal = () => {
     setIsModalOpen(false)
     setEditingItem(null)
@@ -181,7 +166,6 @@ export default function EquipmentTableClient({
     setIsSubmitting(false)
 
     if (res?.success) {
-      alert(editingItem ? 'อัปเดตสำเร็จ' : 'เพิ่มอุปกรณ์สำเร็จ')
       closeModal()
       router.refresh()
     } else {
@@ -189,7 +173,6 @@ export default function EquipmentTableClient({
     }
   }
 
-  // ลบข้อมูล
   const handleDelete = async (id: number) => {
     if (!confirm('ยืนยันการลบอุปกรณ์นี้? การกระทำนี้ไม่สามารถย้อนกลับได้')) return
     
@@ -219,12 +202,12 @@ export default function EquipmentTableClient({
         <table className="data-table">
           <thead>
             <tr>
-              <th style={{ fontSize: '1rem' }}>รหัส/รูป</th>
-              <th style={{ fontSize: '1rem' }}>ชื่ออุปกรณ์</th>
-              <th style={{ fontSize: '1rem' }}>หมวดหมู่</th>
-              <th style={{ textAlign: 'center', fontSize: '1rem' }}>สต็อก (ยืมได้/ทั้งหมด)</th>
-              <th style={{ textAlign: 'center', fontSize: '1rem' }}>สถานะ</th>
-              <th style={{ textAlign: 'center', fontSize: '1rem' }}>จัดการ</th>
+              <th className="w-28" style={{ fontSize: '1rem' }}>รหัส/รูป</th>
+              <th className="w-56" style={{ fontSize: '1rem' }}>ชื่ออุปกรณ์</th>
+              <th className="w-28" style={{ fontSize: '1rem' }}>หมวดหมู่</th>
+              <th className="w-28" style={{ textAlign: 'center', fontSize: '1rem' }}>สต็อก (ยืมได้/ทั้งหมด)</th>
+              <th className="w-28" style={{ textAlign: 'center', fontSize: '1rem' }}>สถานะ</th>
+              <th className="w-28" style={{ textAlign: 'center', fontSize: '1rem' }}>จัดการ</th>
             </tr>
           </thead>
           <tbody>
@@ -236,15 +219,15 @@ export default function EquipmentTableClient({
                       <div className="w-10 h-10 bg-gray-100 rounded flex-shrink-0 bg-cover bg-center border border-gray-200"
                            style={{ backgroundImage: eq.imageUrl ? `url(${eq.imageUrl})` : 'none' }}>
                       </div>
-                      <span className="font-mono text-sm">{eq.code}</span>
+                      <span className="font-mono" style={{ fontSize: '1rem' }}>{eq.code}</span>
                     </div>
                   </td>
                   <td>
-                    <div className="font-medium">{eq.name}</div>
+                    <div className="font-medium" style={{ fontSize: '1rem' }}>{eq.name}</div>
                     <div className="text-xs text-[var(--color-text-muted)] line-clamp-1 max-w-[200px]" title={eq.description || ''}>{eq.description || '-'}</div>
                   </td>
-                  <td>{eq.category.name}</td>
-                  <td className="text-center font-medium">
+                  <td><span style={{ fontSize: '1rem' }}>{eq.category.name}</span></td>
+                  <td className="text-center font-medium" style={{ fontSize: '1rem' }}>
                     <span className={eq.availableStock === 0 ? 'text-[var(--color-danger)]' : 'text-[var(--color-success)]'}>{eq.availableStock}</span>
                     <span className="text-[var(--color-text-muted)] mx-1">/</span>
                     <span>{eq.stock}</span>
@@ -256,7 +239,7 @@ export default function EquipmentTableClient({
                     <div className="flex justify-center gap-2">
                       <button
                         onClick={() => handleEdit(eq)}
-                        className="btn btn-secondary !px-3 !py-1 text-xs"
+                        className="btn btn-outline-warning !px-3 !py-1 text-sm"
                       >
                         แก้ไข
                       </button>
@@ -308,7 +291,6 @@ export default function EquipmentTableClient({
                     disabled={!!editingItem}
                     className="form-input disabled:bg-gray-100 disabled:text-gray-500"
                     placeholder="เช่น FB-001"
-                    readOnly
                   />
                 </div>
 

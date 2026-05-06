@@ -16,7 +16,11 @@ const borrowFormSchema = z
     department: z.string().min(1, 'กรุณากรอกหน่วยงาน/คณะ'),
     phone: z
       .string()
-      .regex(/^[0-9]{9,10}$/, 'เบอร์โทรต้องเป็นตัวเลข 9-10 หลัก'),
+      .min(1, 'กรุณากรอกเบอร์โทร')
+      .transform((val) => val.replace(/-/g, ''))
+      .refine((val) => /^[0-9]{4,10}$/.test(val), {
+        message: 'เบอร์โทรต้องเป็นตัวเลข 4-10 หลัก',
+      }),
     email: z.string().email('รูปแบบอีเมลไม่ถูกต้อง'),
     borrowDate: z.string().min(1, 'กรุณาเลือกวันที่ยืม'),
     returnDate: z.string().min(1, 'กรุณาเลือกวันที่คืน'),

@@ -180,7 +180,7 @@ export default function EquipmentSelectionClient({ initialEquipments, categories
                   {/* รูปจิ๋ว */}
                   <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden shrink-0 flex items-center justify-center">
                     {item.imageUrl ? (
-                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                      <img src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}${item.imageUrl}`} alt={item.name} className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-xs text-gray-400">No img</span>
                     )}

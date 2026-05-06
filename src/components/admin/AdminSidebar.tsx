@@ -62,7 +62,7 @@ export default function AdminSidebar({ role }: { role?: string }) {
       {/* Logo / Title */}
       <div className="p-6 border-t border-gray-200">
         <div className="flex items-center gap-3">
-          <img src="/SHC_Logo.svg" alt="SHC Logo" className="w-20 h-20 bg-white rounded-full" />
+          <img src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/SHC_Logo.svg`} alt="SHC Logo" className="w-20 h-20 bg-white rounded-full" />
           <div>
             <p className="font-bold text-md leading-tight text-white ">SHC-Equipment Borrowing System</p>
             <p className="text-gray-100 text-xs">ระบบยืม-คืนอุปกรณ์กีฬา <br/>สถานกีฬาและสุขภาพ (SHC)</p>
@@ -107,7 +107,7 @@ export default function AdminSidebar({ role }: { role?: string }) {
 
         {/* Logout */}
         <button
-          onClick={() => signOut({ callbackUrl: '/equipment/admin/login' })}
+          onClick={() => signOut({ callbackUrl: `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/equipment/admin/login` })}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-red-600/20 transition-all"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

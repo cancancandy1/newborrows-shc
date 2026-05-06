@@ -49,9 +49,9 @@ export default function LoginPage() {
     <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
       <div className="text-center mb-10 justify-center">
         <div className="flex items-center justify-center">
-          <a href="/equipment/borrow/step1">
+          <a href={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/equipment/borrow/step1`}>
             <img 
-              src="/SHC_Logo.svg" 
+              src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/SHC_Logo.svg`} 
               alt="SHC Logo" 
               className="w-20 h-20" 
             />

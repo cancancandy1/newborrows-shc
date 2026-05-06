@@ -51,7 +51,7 @@ export default function EquipmentCard({ equipment, onSelect, selectedQuantity = 
       <div className="relative h-44 bg-gray-50">
         {equipment.imageUrl ? (
           <Image
-            src={equipment.imageUrl}
+            src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}${equipment.imageUrl}`}
             alt={equipment.name}
             fill
             className="object-contain"
