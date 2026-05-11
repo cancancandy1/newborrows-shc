@@ -30,8 +30,8 @@ export default function BorrowTableClient({ initialData }: { initialData: Borrow
     if (!selectedBorrow) return
     
     // confirm ถ้าเป็นการลบหรือคืน
-    if (newStatus === BorrowStatus.RETURNED && !confirm('ยืนยันว่าผู้ใช้คืนอุปกรณ์อย่างสมบูรณ์แล้ว? (ข้อมูล stock จะอัปเดตอัตโนมัติ)')) return
-    if (newStatus === BorrowStatus.REJECTED && !note && !confirm('ไม่ได้ใส่หมายเหตุปฏิเสธ ยืนยันการปฏิเสธหรือไม่?')) return
+    if (newStatus === BorrowStatus.RETURNED && !confirm('ยืนยันว่าผู้ใช้คืนอุปกรณ์อย่างสมบูรณ์ (ข้อมูล stock จะอัปเดตอัตโนมัติ)')) return
+    if (newStatus === BorrowStatus.REJECTED && !note && !confirm('ไม่ได้ระบุหมายเหตุการปฏิเสธ ยืนยันการปฏิเสธหรือไม่?')) return
 
     setIsUpdating(true)
     const res = await updateBorrowStatus(selectedBorrow.id, newStatus, note)
@@ -48,7 +48,7 @@ export default function BorrowTableClient({ initialData }: { initialData: Borrow
 
   // ลบข้อมูล
   const handleDelete = async (id: number) => {
-    if (!confirm('ยืนยันการลบรายการยืมนี้? ข้อมูลจะไม่สามารถกู้คืนได้ (Stock จะถูกคืนถ้ายังยืมไม่เสร็จ)')) return
+    if (!confirm('ยืนยันการลบรายการนี้ ข้อมูลจะไม่สามารถกู้คืนได้')) return
     
     const res = await deleteBorrow(id)
     if (res.success) {
@@ -155,8 +155,12 @@ export default function BorrowTableClient({ initialData }: { initialData: Borrow
                   <p className="font-semibold">{selectedBorrow.studentId}</p>
                 </div>
                 <div>
+                  <p className="text-gray-500 text-sm mb-1">หน่วยงาน/สาขาวิชา</p>
+                  <p className="font-semibold ">{selectedBorrow.department}</p>
+                </div>
+                <div>
                   <p className="text-gray-500 text-sm mb-1">เบอร์โทรศัพท์</p>
-                  <p className="font-semibold text-blue-600">{selectedBorrow.phone}</p>
+                  <p className="font-semibold">{selectedBorrow.phone}</p>
                 </div>
                 <div>
                   <p className="text-gray-500 text-sm mb-1">วันที่ยืม-คืน</p>
@@ -211,24 +215,64 @@ export default function BorrowTableClient({ initialData }: { initialData: Borrow
                 <div className="flex flex-wrap gap-2">
                   {selectedBorrow.status === BorrowStatus.PENDING && (
                     <>
-                      <button onClick={() => handleUpdateStatus(BorrowStatus.APPROVED)} disabled={isUpdating} className="btn bg-blue-600 hover:bg-blue-700 text-white flex-1 min-w-[120px]">
-                        ✅ อนุมัติยืม
+                      <button onClick={() => handleUpdateStatus(BorrowStatus.APPROVED)} disabled={isUpdating} className="btn bg-blue-600 hover:bg-blue-700 text-white flex-1 min-w-[120px] flex items-center justify-center gap-2">
+                        {isUpdating ? (
+                          <>
+                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                            กรุณารอสักครู่...
+                          </>
+                        ) : (
+                          <>✅ อนุมัติยืม</>
+                        )}
                       </button>
-                      <button onClick={() => handleUpdateStatus(BorrowStatus.REJECTED)} disabled={isUpdating} className="btn bg-red-600 hover:bg-red-700 text-white flex-1 min-w-[120px]">
-                        ❌ ปฏิเสธการยืม
+                      <button onClick={() => handleUpdateStatus(BorrowStatus.REJECTED)} disabled={isUpdating} className="btn bg-red-600 hover:bg-red-700 text-white flex-1 min-w-[120px] flex items-center justify-center gap-2">
+                        {isUpdating ? (
+                          <>
+                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                            กรุณารอสักครู่...
+                          </>
+                        ) : (
+                          <>❌ ปฏิเสธการยืม</>
+                        )}
                       </button>
                     </>
                   )}
 
                   {selectedBorrow.status === BorrowStatus.APPROVED && (
-                    <button onClick={() => handleUpdateStatus(BorrowStatus.BORROWED)} disabled={isUpdating} className="btn bg-purple-600 hover:bg-purple-700 text-white flex-1">
-                      📦 รับอุปกรณ์ไปแล้ว (สถานะ : กำลังยืม)
+                    <button onClick={() => handleUpdateStatus(BorrowStatus.BORROWED)} disabled={isUpdating} className="btn bg-purple-600 hover:bg-purple-700 text-white flex-1 flex items-center justify-center gap-2">
+                      {isUpdating ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          กรุณารอสักครู่...
+                        </>
+                      ) : (
+                        <>📦 รับอุปกรณ์ไปแล้ว (สถานะ : กำลังยืม)</>
+                      )}
                     </button>
                   )}
 
                   {selectedBorrow.status === BorrowStatus.BORROWED && (
-                    <button onClick={() => handleUpdateStatus(BorrowStatus.RETURNED)} disabled={isUpdating} className="btn bg-green-600 hover:bg-green-700 text-white flex-1">
-                      🔄 คืนอุปกรณ์แล้ว (คืน Stock)
+                    <button onClick={() => handleUpdateStatus(BorrowStatus.RETURNED)} disabled={isUpdating} className="btn bg-green-600 hover:bg-green-700 text-white flex-1 flex items-center justify-center gap-2">
+                      {isUpdating ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          กรุณารอสักครู่...
+                        </>
+                      ) : (
+                        <>🔄 คืนอุปกรณ์แล้ว (คืน Stock)</>
+                      )}
                     </button>
                   )}
 

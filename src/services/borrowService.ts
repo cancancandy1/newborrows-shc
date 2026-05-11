@@ -1,4 +1,4 @@
-// services/borrowService.ts - Business logic สำหรับการยืม
+// services/borrowService.ts - Business logic For Borrows
 
 import * as borrowRepo from '../repositories/borrowRepository'
 import * as equipmentRepo from '../repositories/equipmentRepository'
@@ -8,7 +8,7 @@ import type { BorrowFormData, SelectedEquipment } from '../types'
 import { format } from '../lib/dateUtils'
 
 // ===========================
-// สร้างรายการยืมใหม่
+// Create Borrows Record
 // ===========================
 export async function submitBorrow(
   formData: BorrowFormData,
@@ -18,7 +18,7 @@ export async function submitBorrow(
     throw new Error('กรุณาเลือกอุปกรณ์อย่างน้อย 1 รายการ')
   }
 
-  // ตรวจสอบ stock ก่อนยืม
+  // Check stock
   for (const item of selectedItems) {
     const equipment = await equipmentRepo.findEquipmentById(item.id)
     if (!equipment) throw new Error(`ไม่พบอุปกรณ์: ${item.name}`)
@@ -27,10 +27,10 @@ export async function submitBorrow(
     }
   }
 
-  // สร้างรหัสการยืม
+  // Generate Borrow code
   const borrowCode = await borrowRepo.generateBorrowCode()
 
-  // สร้าง Borrow record
+  // Create Borrow record
   const borrow = await borrowRepo.createBorrow({
     borrowCode,
     studentId: formData.studentId,
@@ -46,7 +46,7 @@ export async function submitBorrow(
     })),
   })
 
-  // ส่งอีเมลยืนยัน (ไม่ block การ response)
+  // Send Email confirmation (not block the response)
   try {
     await sendBorrowConfirmation({
       borrowCode,
@@ -64,7 +64,7 @@ export async function submitBorrow(
       })),
     })
   } catch (e) {
-    // ไม่ throw error ถ้าส่งอีเมลไม่สำเร็จ
+    // Do not throw error if email is not sent successfully
     console.error('ส่งอีเมลยืนยันไม่สำเร็จ:', e)
   }
 
@@ -72,7 +72,7 @@ export async function submitBorrow(
 }
 
 // ===========================
-// อัปเดตสถานะ + ส่งอีเมล
+// Update Status + Send Email
 // ===========================
 export async function updateBorrowStatus(
   id: number,
@@ -82,7 +82,7 @@ export async function updateBorrowStatus(
 ) {
   const borrow = await borrowRepo.updateBorrowStatus(id, status, note, changedBy)
 
-  // ส่งอีเมลแจ้งเตือนสำหรับ APPROVED, REJECTED, RETURNED
+  // Send Email notification for APPROVED, REJECTED, RETURNED
   if (([BorrowStatus.APPROVED, BorrowStatus.REJECTED, BorrowStatus.RETURNED] as BorrowStatus[]).includes(status)) {
     try {
       await sendStatusUpdate({
@@ -101,14 +101,14 @@ export async function updateBorrowStatus(
 }
 
 // ===========================
-// ดึงรายการยืม
+// Hook data Borrows 
 // ===========================
 export async function getBorrows(params: { page?: number; pageSize?: number; search?: string; status?: string } = {}) {
   return borrowRepo.findAllBorrows(params)
 }
 
 // ===========================
-// ดึงรายการยืมรายชิ้น
+// Hook data Borrows for each ID
 // ===========================
 export async function getBorrowById(id: number) {
   const borrow = await borrowRepo.findBorrowById(id)
@@ -117,14 +117,14 @@ export async function getBorrowById(id: number) {
 }
 
 // ===========================
-// ลบรายการยืม
+// Delete Borrow Record
 // ===========================
 export async function deleteBorrow(id: number) {
   return borrowRepo.deleteBorrow(id)
 }
 
 // ===========================
-// สถิติ Dashboard
+// Dashboard Stats
 // ===========================
 export async function getDashboardStats() {
   return borrowRepo.getBorrowStats()
