@@ -217,3 +217,30 @@ export async function createCategory(formData: { name: string; description?: str
     return { success: false, message: error instanceof Error ? error.message : 'เกิดข้อผิดพลาด' }
   }
 }
+
+// ===========================
+// Export ข้อมูลอุปกรณ์เป็น Excel/PDF
+// ===========================
+export async function getExportEquipmentData(params: { search?: string; categoryId?: number } = {}) {
+  const session = await auth()
+  if (!session) throw new Error('ไม่ได้รับอนุญาต')
+
+  // ใช้ pageSize ใหญ่มากเพื่อให้ได้ข้อมูลทั้งหมด
+  const result = await equipmentService.getAllEquipmentsForAdmin({
+    ...params,
+    page: 1,
+    pageSize: 999999,
+  })
+
+  // แปลงข้อมูลเป็น rows สำหรับ Excel/PDF
+  return result.data.map((eq) => {
+    return {
+      'รหัสอุปกรณ์': eq.code || '-',
+      'ชื่ออุปกรณ์': eq.name,
+      'หมวดหมู่': eq.category?.name || '-',
+      'จำนวนทั้งหมด': eq.stock,
+      'ถูกยืมไป': eq.stock - eq.availableStock,
+      'คงเหลือ': eq.availableStock,
+    }
+  })
+}

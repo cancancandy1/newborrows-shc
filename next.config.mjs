@@ -8,8 +8,10 @@ const nextConfig = {
   },
   // เพิ่ม basePath เพื่อรองรับการ deploy ที่ sub-path
   // basePath: '/new-borrows',
-  // assetPrefix: '/new-borrows',
-  // output: "export",
+  // อนุญาตรูปภาพจาก path ภายในระบบ (uploads ที่ serve ผ่าน API route)
+  images: {
+    unoptimized: true,
+  },
   experimental: {
     serverComponentsExternalPackages: ['sharp']
   }

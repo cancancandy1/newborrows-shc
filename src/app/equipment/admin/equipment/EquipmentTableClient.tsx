@@ -6,6 +6,10 @@ import { createEquipment, updateEquipment, deleteEquipment, createCategory } fro
 import { EquipmentStatusBadge, equipmentStatusMap } from '../../../../components/ui/Badge'
 import { EquipmentStatus } from '@prisma/client'
 import type { EquipmentWithCategory, EquipmentCategory } from '../../../../types'
+import * as xlsx from 'xlsx'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
+import '../../../../assets/fonts/Sarabun-Regular-normal'
 
 
 async function compressImage(file: File, maxWidth = 800, maxSizeKB = 200): Promise<File> {
@@ -66,10 +70,12 @@ async function compressImage(file: File, maxWidth = 800, maxSizeKB = 200): Promi
 
 export default function EquipmentTableClient({ 
   initialData, 
-  categories 
+  categories,
+  exportData = []
 }: { 
   initialData: EquipmentWithCategory[]
   categories: EquipmentCategory[]
+  exportData?: any[]
 }) {
   const router = useRouter()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -81,6 +87,13 @@ export default function EquipmentTableClient({
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<EquipmentStatus>(EquipmentStatus.ACTIVE)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const getImageUrl = (url: string | null) => {
+    if (!url) return 'none'
+    if (url.startsWith('blob:') || url.startsWith('http')) return url
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '/new-borrows'
+    return `${basePath}${url}`
+  }
 
   const handleAddNew = () => {
     setEditingItem(null)
@@ -184,16 +197,87 @@ export default function EquipmentTableClient({
     }
   }
 
+  // Export Excel
+  const exportExcel = () => {
+    if (!exportData || exportData.length === 0) return alert('ไม่มีข้อมูลสำหรับ Export')
+    
+    // สร้าง Workbook
+    const worksheet = xlsx.utils.json_to_sheet(exportData)
+    const workbook = xlsx.utils.book_new()
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Equipment Report')
+    
+    // ตั้งค่าความกว้างคอลัมน์
+    worksheet['!cols'] = [
+      { wch: 15 }, // รหัสอุปกรณ์
+      { wch: 30 }, // ชื่ออุปกรณ์
+      { wch: 20 }, // หมวดหมู่
+      { wch: 15 }, // จำนวนทั้งหมด
+      { wch: 15 }, // ถูกยืมไป
+      { wch: 15 }, // คงเหลือ
+    ]
+
+    xlsx.writeFile(workbook, `SHC_Equipment_${new Date().toISOString().split('T')[0]}.xlsx`)
+  }
+
+  // Export PDF
+  const exportPDF = () => {
+    if (!exportData || exportData.length === 0) return alert('ไม่มีข้อมูลสำหรับ Export')
+
+    const doc = new jsPDF('p')
+    
+    // ตั้งค่า font ภาษาไทย
+    doc.setFont('Sarabun', 'normal')
+    
+    doc.setFontSize(16)
+    doc.text('รายงานสรุปยอดอุปกรณ์กีฬา สถานกีฬาและสุขภาพ', 14, 15)
+    
+    doc.setFontSize(10)
+    doc.text(`ข้อมูล ณ วันที่: ${new Date().toLocaleDateString('th-TH')}`, 14, 22)
+
+    // ข้อมูลสำหรับตาราง
+    const headers = [['รหัสอุปกรณ์', 'ชื่ออุปกรณ์', 'หมวดหมู่', 'ทั้งหมด', 'ถูกยืม', 'คงเหลือ']]
+    const body = exportData.map(d => [
+      d['รหัสอุปกรณ์'],
+      d['ชื่ออุปกรณ์'],
+      d['หมวดหมู่'],
+      d['จำนวนทั้งหมด'],
+      d['ถูกยืมไป'],
+      d['คงเหลือ']
+    ])
+
+    autoTable(doc, {
+      head: headers,
+      body: body,
+      startY: 28,
+      styles: { font: 'Sarabun', fontSize: 10 },
+      headStyles: { fillColor: [30, 64, 175] },
+    })
+
+    doc.save(`SHC_Equipment_${new Date().toISOString().split('T')[0]}.pdf`)
+  }
+
   return (
     <>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4">
         <h2 className="text-[var(--text-lg)] font-bold">รายการอุปกรณ์ ({initialData.length})</h2>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex gap-2 w-full sm:w-auto flex-wrap">
+          <button onClick={exportExcel} className="btn bg-green-600 hover:bg-green-700 text-white flex gap-2 text-sm">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Excel
+          </button>
+          <button onClick={exportPDF} className="btn bg-red-600 hover:bg-red-700 text-white flex gap-2 text-sm">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+            </svg>
+            PDF
+          </button>
           <button onClick={() => setIsCategoryModalOpen(true)} className="btn btn-secondary flex-1 sm:flex-none text-sm">
-            + เพิ่มหมวดหมู่
+            + หมวดหมู่
           </button>
           <button onClick={handleAddNew} className="btn btn-primary flex-1 sm:flex-none text-sm">
-            + เพิ่มอุปกรณ์ใหม่
+            + อุปกรณ์ใหม่
           </button>
         </div>
       </div>
@@ -217,7 +301,7 @@ export default function EquipmentTableClient({
                   <td>
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-gray-100 rounded flex-shrink-0 bg-cover bg-center border border-gray-200"
-                           style={{ backgroundImage: eq.imageUrl ? `url(${eq.imageUrl})` : 'none' }}>
+                           style={{ backgroundImage: eq.imageUrl ? `url(${getImageUrl(eq.imageUrl)})` : 'none' }}>
                       </div>
                       <span className="font-mono" style={{ fontSize: '1rem' }}>{eq.code}</span>
                     </div>
@@ -361,7 +445,7 @@ export default function EquipmentTableClient({
                   {imagePreview && (
                     <div className="mb-3 relative group w-full h-48 bg-gray-50 rounded-lg border border-[var(--color-border)] overflow-hidden">
                       <img
-                        src={imagePreview}
+                        src={getImageUrl(imagePreview)}
                         alt="ตัวอย่างรูปอุปกรณ์"
                         className="w-full h-full object-contain"
                       />

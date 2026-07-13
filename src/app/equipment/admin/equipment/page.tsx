@@ -1,5 +1,5 @@
 // app/admin/equipment/page.tsx - จัดการอุปกรณ์หลัก (Admin)
-import { getEquipmentsAdmin, getCategories } from '../../../../actions/equipment'
+import { getEquipmentsAdmin, getCategories, getExportEquipmentData } from '../../../../actions/equipment'
 import EquipmentTableClient from './EquipmentTableClient'
 import Pagination from '../../../../components/ui/Pagination'
 
@@ -16,9 +16,10 @@ export default async function AdminEquipmentPage({
   const categoryId = params.categoryId ? Number(params.categoryId) : undefined
 
   // ดึงข้อมูลอุปกรณ์หมวดหมู่จากฝั่งเซิร์ฟเวอร์แบบขนาน
-  const [result, categories] = await Promise.all([
+  const [result, categories, exportData] = await Promise.all([
     getEquipmentsAdmin({ page, pageSize: 10, search, categoryId }),
-    getCategories()
+    getCategories(),
+    getExportEquipmentData({ search, categoryId })
   ])
 
   return (
@@ -50,7 +51,7 @@ export default async function AdminEquipmentPage({
 
       {/* หุ้มตารางด้วย Card Container */}
       <div className="card p-0 overflow-hidden shadow-none">
-        <EquipmentTableClient initialData={result.data} categories={categories} />
+        <EquipmentTableClient initialData={result.data} categories={categories} exportData={exportData} />
       </div>
 
       <Pagination
