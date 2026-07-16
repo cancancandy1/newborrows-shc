@@ -9,12 +9,14 @@ import type { EquipmentWithCategory, EquipmentCategory } from '../../../../types
 import * as xlsx from 'xlsx'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import Image from 'next/image'
+import { getUploadUrl } from '../../../../utils/image'
 import '../../../../assets/fonts/Sarabun-Regular-normal'
 
 
 async function compressImage(file: File, maxWidth = 800, maxSizeKB = 200): Promise<File> {
   return new Promise((resolve, reject) => {
-    const img = new Image()
+    const img = new window.Image()
     const url = URL.createObjectURL(file)
 
     img.onload = () => {
@@ -87,13 +89,6 @@ export default function EquipmentTableClient({
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<EquipmentStatus>(EquipmentStatus.ACTIVE)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const getImageUrl = (url: string | null) => {
-    if (!url) return 'none'
-    if (url.startsWith('blob:') || url.startsWith('http')) return url
-    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '/new-borrows'
-    return `${basePath}${url}`
-  }
 
   const handleAddNew = () => {
     setEditingItem(null)
@@ -300,8 +295,17 @@ export default function EquipmentTableClient({
                 <tr key={eq.id}>
                   <td>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-100 rounded flex-shrink-0 bg-cover bg-center border border-gray-200"
-                           style={{ backgroundImage: eq.imageUrl ? `url(${getImageUrl(eq.imageUrl)})` : 'none' }}>
+                      <div className="w-10 h-10 bg-gray-100 rounded flex-shrink-0 relative overflow-hidden border border-gray-200">
+                        {eq.imageUrl && (
+                          // ใช้ next/image เพื่อให้ผ่าน Image Optimization ของ Next.js ป้องกันปัญหา 403
+                          <Image
+                            src={getUploadUrl(eq.imageUrl) || ''}
+                            alt={eq.code}
+                            fill
+                            className="object-cover"
+                            sizes="40px"
+                          />
+                        )}
                       </div>
                       <span className="font-mono" style={{ fontSize: '1rem' }}>{eq.code}</span>
                     </div>
@@ -444,11 +448,20 @@ export default function EquipmentTableClient({
                   {/* แสดงรูปตัวอย่าง (preview) */}
                   {imagePreview && (
                     <div className="mb-3 relative group w-full h-48 bg-gray-50 rounded-lg border border-[var(--color-border)] overflow-hidden">
-                      <img
-                        src={getImageUrl(imagePreview)}
-                        alt="ตัวอย่างรูปอุปกรณ์"
-                        className="w-full h-full object-contain"
-                      />
+                      {imagePreview.startsWith('blob:') ? (
+                        <img
+                          src={imagePreview}
+                          alt="ตัวอย่างรูปอุปกรณ์"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <Image
+                          src={getUploadUrl(imagePreview) || ''}
+                          alt="ตัวอย่างรูปอุปกรณ์"
+                          fill
+                          className="object-contain"
+                        />
+                      )}
                       {/* ปุ่มลบรูป preview */}
                       <button
                         type="button"

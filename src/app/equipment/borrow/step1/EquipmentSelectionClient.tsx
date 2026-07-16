@@ -3,9 +3,11 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import EquipmentCard from '../../../../components/equipment/EquipmentCard'
 import Pagination from '../../../../components/ui/Pagination'
 import BorrowStatusSearch from '../../../../components/equipment/BorrowStatusSearch'
+import { getUploadUrl } from '../../../../utils/image'
 import type { SelectedEquipment, PaginatedResult, EquipmentWithCategory } from '../../../../types'
 
 interface Props {
@@ -178,9 +180,16 @@ export default function EquipmentSelectionClient({ initialEquipments, categories
               cart.map((item) => (
                 <div key={item.id} className="bg-white p-3 rounded-lg border border-blue-100 shadow-sm flex gap-3 group">
                   {/* รูปจิ๋ว */}
-                  <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden shrink-0 flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden shrink-0 flex items-center justify-center relative">
                     {item.imageUrl ? (
-                      <img src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}${item.imageUrl}`} alt={item.name} className="w-full h-full object-cover" />
+                      // ใช้ next/image เพื่อให้ผ่าน Image Optimization ของ Next.js ป้องกันปัญหา 403
+                      <Image 
+                        src={getUploadUrl(item.imageUrl) || ''} 
+                        alt={item.name} 
+                        fill
+                        className="object-cover" 
+                        sizes="48px"
+                      />
                     ) : (
                       <span className="text-xs text-gray-400">No img</span>
                     )}

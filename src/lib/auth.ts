@@ -4,6 +4,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
+import { authCookies, useSecureAuthCookies } from './authCookies'
 
 const loginSchema = z.object({
   username: z.string().min(1, 'กรุณากรอก username'),
@@ -11,6 +12,8 @@ const loginSchema = z.object({
 })
 
 export const authOptions: NextAuthOptions = {
+  useSecureCookies: useSecureAuthCookies,
+  cookies: authCookies,
   pages: {
     signIn: '/equipment/admin/login',
   },
